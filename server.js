@@ -88,6 +88,22 @@ app.post('/api/users/:_id/exercises', (req, res, next) => {
   });
 });
 
+app.get('/api/users/:_id/logs', (req, res, next) => {
+  const { _id } = req.params;
+
+  USER.findById(_id, (err, data) => {
+    if (err) return next(err);
+
+    const username = data.username;
+
+    LOG.find({ user: _id }, (err, data) => {
+      if (err) return next(err);
+
+      res.json({ _id, count: data.length, username });
+    });
+  });
+});
+
 const listener = app.listen(port, () => {
   console.log('Your app is listening on port ' + listener.address().port);
 });
