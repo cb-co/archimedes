@@ -16,6 +16,7 @@ const LogsSchema = new mongoose.Schema({
   description: String,
   duration: Number,
   date: String,
+  dateHelper: Number,
   user: String,
 });
 
@@ -72,7 +73,13 @@ app.post('/api/users/:_id/exercises', (req, res, next) => {
       : new Date().toDateString();
 
     LOG.create(
-      { user: _id, description, duration, date: newDate },
+      {
+        user: _id,
+        description,
+        duration,
+        dateHelper: date ? Date.parse(date) : Date.now(),
+        date: newDate,
+      },
       (err, data) => {
         if (err) return next(err);
 
@@ -81,7 +88,7 @@ app.post('/api/users/:_id/exercises', (req, res, next) => {
           username,
           description,
           duration: Number(duration),
-          date: data.date,
+          date: newDate,
         });
       }
     );
@@ -90,6 +97,8 @@ app.post('/api/users/:_id/exercises', (req, res, next) => {
 
 app.get('/api/users/:_id/logs', (req, res, next) => {
   const { _id } = req.params;
+  const { from, to, limit } = req.query;
+  console.log(req);
 
   USER.findById(_id, (err, data) => {
     if (err) return next(err);
@@ -98,6 +107,10 @@ app.get('/api/users/:_id/logs', (req, res, next) => {
 
     LOG.find({ user: _id })
       .select({ description: 1, duration: 1, date: 1 })
+      .limit(limit ? Number(limit) : null)
+      .where('dateHelper')
+      .gte(from ? Date.parse(from) : 0)
+      .lte(to ? Date.parse(to) : Date.now())
       .exec((err, data) => {
         if (err) return next(err);
 
