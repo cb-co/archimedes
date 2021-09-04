@@ -50,6 +50,16 @@ app.post('/api/users', (req, res, next) => {
   });
 });
 
+app.get('/api/users', (req, res, next) => {
+  USER.find({})
+    .select({ __v: 0 })
+    .exec((err, data) => {
+      if (err) return next(err);
+
+      res.json(data);
+    });
+});
+
 const listener = app.listen(port, () => {
   console.log('Your app is listening on port ' + listener.address().port);
 });
