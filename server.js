@@ -96,11 +96,13 @@ app.get('/api/users/:_id/logs', (req, res, next) => {
 
     const username = data.username;
 
-    LOG.find({ user: _id }, (err, data) => {
-      if (err) return next(err);
+    LOG.find({ user: _id })
+      .select({ description: 1, duration: 1, date: 1 })
+      .exec((err, data) => {
+        if (err) return next(err);
 
-      res.json({ _id, count: data.length, username });
-    });
+        res.json({ _id, count: data.length, log: data, username });
+      });
   });
 });
 
