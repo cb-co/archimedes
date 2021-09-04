@@ -13,11 +13,10 @@ mongoose.connect(process.env.DB_URI, {
 });
 
 const LogsSchema = new mongoose.Schema({
-  log: [],
-  _id: {
-    type: String,
-    required: true,
-  },
+  description: String,
+  duration: Number,
+  date: String,
+  user: String,
 });
 
 const UserSchema = new mongoose.Schema({
@@ -58,6 +57,29 @@ app.get('/api/users', (req, res, next) => {
 
       res.json(data);
     });
+});
+
+app.post('/api/users/:_id/exercises', (req, res, next) => {
+  const { description, duration, date } = req.body;
+  const { _id } = req.params;
+
+  USER.findById(_id, (err, data) => {
+    if (err) return next(err);
+
+    const username = data.username;
+    const newDate = date
+      ? new Date(date).toDateString()
+      : new Date().toDateString();
+
+    LOG.create(
+      { user: _id, description, duration, date: newDate },
+      (err, data) => {
+        if (err) return next(err);
+
+        res.json({ _id, username, description, duration, date: data.date });
+      }
+    );
+  });
 });
 
 const listener = app.listen(port, () => {
